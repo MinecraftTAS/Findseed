@@ -14,8 +14,9 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.commands.Command;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 
@@ -89,13 +90,10 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 	public void run() {
 		/* Register the Commands */
 		System.out.println("[Findseed] Preparing Bot...");
-//		CommandData d = new CommandData("findseed", "Finds a seed and shows the amount of eyes it has.");
-//		d.addOption(OptionType.INTEGER, "seed", "Seed to check on", false);
+		CommandData d = new CommandData("findseed", "Finds a seed and shows the amount of eyes it has.");
+		d.addOption(OptionType.INTEGER, "seed", "Seed to check on", false);
 		for (Guild guild : jda.getGuilds()) {
-//			guild.upsertCommand(d).complete();
-			for (Command c : guild.retrieveCommands().complete()) {
-				if (c.getName().equals("findseed")) c.delete().complete();
-			}
+			guild.upsertCommand(d).complete();
 		}
 		System.out.println("[Findseed] Done preparing bot.");
 	}
