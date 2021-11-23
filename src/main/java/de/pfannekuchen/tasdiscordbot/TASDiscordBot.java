@@ -31,6 +31,18 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 			event.reply(new MessageBuilder().setEmbeds(findseedEmbed(event.getOption("seed"), event.getUser().getAsTag(), event.getUser().getEffectiveAvatarUrl())).build()).complete();
 	}
 	
+	private String[] broken = new String[] {
+		"Great, you broke it.",
+		"Wait? It's broken.. How did that happen?",
+		"uhh that's weird",
+		"Broken? Interesting, lets hope it doesn't leak end dust.",
+		"OH NO IT'S BROKEN. CALL HEROBRINE",
+		"asldzhiuaszd836q2w097rew",
+		"1+2	4 mv9182n	3z037n5vnz 87923 t5",
+		"20p3ic  nz745897b23zb5t 709823t5790n2305",
+		"23789cn5 z609237c5 bt0ß92w349567m",
+	};
+	
 	private MessageEmbed findseedEmbed(OptionMapping optionMapping, String usertag, String userurl) {
 		boolean[] eyes = new boolean[12];
 		Random rng = new Random();
@@ -40,8 +52,11 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 		String full = "<:nothing:912780807091933184>";
 		String empty = "<:nothing:912780807041613884>";
 		String lava = "<:nothing:912779051926700063>";
+		String broken2 = "<:end_portal_frame_broken2:912811133952466974>";
+		String broken1 = "<:end_portal_frame_broken1:912811134191562812>";
 		StringBuilder msg = new StringBuilder();
 		msg.append(nothing);
+		String footer = optionMapping != null ? "Used seed: " + optionMapping.getAsString() : "";
 		for (int i = 0; i < eyes.length; i++) {
 			eyes[i] = rng.nextFloat() < 0.1f;
 			if (eyes[i]) eyeCount++;
@@ -72,8 +87,32 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 			if (i == 11) msg.append(nothing);
 			
 		}
-		
-		return new EmbedBuilder().setTitle("findseed - Your seed is a **" + eyeCount + "** eye").addField("", msg.toString(), false).setColor(Color.red.darker()).addBlankField(false).setFooter(usertag, userurl).build();
+		String out = msg.toString();
+		rng = new Random();
+		boolean isBroken = rng.nextInt(10) == 5;
+		if (eyeCount >= 12) {
+			out = empty+full+full+full+nothing+'\n'+full+lava+lava+lava+full+'\n'+full+lava+lava+lava+full+'\n'+full+lava+lava+lava+full+'\n'+nothing+full+full+full+empty;
+			footer = "Too bad!";
+			eyeCount = 0;
+			rng.setSeed(optionMapping.getAsLong());
+			for (int i = 0; i < 16; i++) {
+				eyeCount += rng.nextFloat() < 0.1f ? 1 : 0;
+			}
+			if (eyeCount == 13) {
+				out = empty+full+full+full+nothing+'\n'+full+lava+lava+lava+full+'\n'+full+lava+lava+lava+full+'\n'+full+lava+lava+lava+full+'\n'+nothing+full+full+full+full;
+			} else if (eyeCount == 14) {
+				out = empty+full+full+full+empty+'\n'+full+lava+lava+lava+full+'\n'+full+lava+lava+lava+full+'\n'+full+lava+lava+lava+full+'\n'+full+full+full+full+full;
+				footer = "Dammit!";
+			} else if (eyeCount == 15) {
+				out = empty+full+full+full+full+'\n'+full+lava+lava+lava+full+'\n'+full+lava+lava+lava+full+'\n'+full+lava+lava+lava+full+'\n'+full+full+full+full+full;
+				footer = "Dammit!";
+			}
+		} else if (isBroken) {
+			footer = broken[rng.nextInt(broken.length)];
+			eyeCount = rng.nextInt(32)-64;
+			out = out.replaceAll(full, rng.nextBoolean() ? broken1 : broken2);
+		}
+		return new EmbedBuilder().setTitle("findseed - Your seed is a **" + eyeCount + "** eye").addField("", out, false).setColor(Color.red.darker()).addField("", footer, false).setFooter(usertag, userurl).build();
 	}
 
 	public TASDiscordBot(Properties configuration) throws InterruptedException, LoginException {
