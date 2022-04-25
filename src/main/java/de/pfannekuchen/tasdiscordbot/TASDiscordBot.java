@@ -14,7 +14,6 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
@@ -28,7 +27,19 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 	@Override
 	public void onSlashCommand(SlashCommandEvent event) {
 		if ("findseed".equalsIgnoreCase(event.getName())) {
-			event.reply(new MessageBuilder().setEmbeds(findseedEmbed(event.getOption("seed"), event.getUser().getAsTag(), event.getUser().getEffectiveAvatarUrl())).build()).complete();
+			
+			long seedOption=0;
+			boolean isSetSeed=false;
+			if(event.getOption("seed")!=null) {
+				seedOption=event.getOption("seed").getAsLong();
+				isSetSeed=true;
+			}
+			
+			String userTagOption= event.getUser().getAsTag();
+			String avatarUrl=event.getUser().getEffectiveAvatarUrl();
+			
+			
+			event.reply(new MessageBuilder().setEmbeds(findseedEmbed(seedOption, userTagOption, avatarUrl, isSetSeed)).build()).complete();
 		}
 	}
 	
@@ -38,13 +49,32 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 //			event.getChannel().retrieveMessageById(event.getMessageIdLong()).submit().whenComplete((msg, stage)->{
 //				String[] words = msg.getContentRaw().split(" ");
 //				if("!debug".equals(words[0])&&msg.getAuthor().getId().equals("146588910292566016")) {
+//					long seedOption=0;
+//					boolean isSetSeed=false;
+//					if(words.length>1 &&isLong(words[1])) {
+//						seedOption=Long.parseLong(words[1]);
+//						isSetSeed=true;
+//					}
 //					User user=msg.getAuthor();
-//					event.getChannel().sendMessage(new MessageBuilder().appendFormat("Debugging things", (Object[]) null).setEmbeds(findseedEmbed(null, user.getAsTag(), user.getEffectiveAvatarUrl())).build()).queue();
+//					
+//					event.getChannel().sendMessage(new MessageBuilder().appendFormat("Debugging things", (Object[]) null).setEmbeds(findseedEmbed(seedOption, user.getAsTag(), user.getEffectiveAvatarUrl(), isSetSeed)).build()).queue();
 //				}
 //			});
 //		} catch (Exception e3) {
 //			return;
 //		}
+//	}
+	
+//	private boolean isLong(String longIn) {
+//		if(longIn==null) {
+//			return false;
+//		}
+//		try {
+//			Long.parseLong(longIn);
+//		}catch (Exception e) {
+//			return false;
+//		}
+//		return true;
 //	}
 	
 	private String[] broken = new String[] {
@@ -59,20 +89,29 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 		"23789cn5 z609237c5 bt0ß92w349567m",
 	};
 	
-	private MessageEmbed findseedEmbed(OptionMapping optionMapping, String usertag, String userurl) {
+	private MessageEmbed findseedEmbed(long seed, String usertag, String userurl, boolean isSetSeed) {
 		boolean[] eyes = new boolean[12];
 		Random rng = new Random();
-		if (optionMapping != null) rng.setSeed(optionMapping.getAsLong());
+		if (isSetSeed) rng.setSeed(seed);
 		int eyeCount = 0;
 		String n = "<:nothing:912781172063490050>";
 		String o = "<:nothing:912780807091933184>";
 		String e = "<:nothing:912780807041613884>";
 		String l = "<a:lava:912779051926700063>";
+		String e1= "<a:endportal1:968224841473855549>";
+		String e2= "<a:endportal2:968224842224656424>";
+		String e3= "<a:endportal3:968224854639804457>";
+		String e4= "<a:endportal4:968224854622998578>";
+		String e5= "<a:endportal5:968224854761414746>";
+		String e6= "<a:endportal6:968224839246696448>";
+		String e7= "<a:endportal7:968224855826763926>";
+		String e8= "<a:endportal8:968224856283951116>";
+		String e9= "<a:endportal9:968224854161645590>";
 		String broken2 = "<:end_portal_frame_broken2:912811133952466974>";
 		String broken1 = "<:end_portal_frame_broken1:912811134191562812>";
 		StringBuilder msg = new StringBuilder();
 		msg.append(n);
-		String footer = optionMapping != null ? "Used seed: " + optionMapping.getAsString() : "";
+		String footer = isSetSeed ? "Used seed: " + seed : "Random seed: " + getSeed(rng);
 		for (int i = 0; i < eyes.length; i++) {
 			eyes[i] = rng.nextFloat() < 0.1f;
 			if (eyes[i]) eyeCount++;
@@ -107,29 +146,37 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 		rng = new Random();
 		boolean isBroken = rng.nextInt(10) == 5;
 		if (eyeCount >= 12) {
-			out = e+o+o+o+n+'\n'
-				+o+l+l+l+o+'\n'
-				+o+l+l+l+o+'\n'
-				+o+l+l+l+o+'\n'
-				+e+o+o+o+e;
-			footer = "Too bad!";
+			out = n+o+o+o+n+'\n'
+				+o+e1+e2+e3+o+'\n'
+				+o+e4+e5+e6+o+'\n'
+				+o+e7+e8+e9+o+'\n'
+				+n+o+o+o+n;
 			eyeCount = 0;
-			rng.setSeed(optionMapping.getAsLong());
+			rng.setSeed(seed);
 			for (int i = 0; i < 16; i++) {
 				eyeCount += rng.nextFloat() < 0.1f ? 1 : 0;
 			}
 			if (eyeCount == 13) {
-				out = e+o+o+o+n+'\n'
-					+o+l+l+l+o+'\n'
-					+o+l+l+l+o+'\n'
-					+o+l+l+l+o+'\n'
-					+n+o+o+o+o;
+				out = o+o+o+o+n+'\n'
+					+o+e1+e2+l+o+'\n'
+					+o+e4+e5+e6+o+'\n'
+					+o+e7+e8+e9+o+'\n'
+					+n+o+o+o+n;
+				footer="Wait, how did you?\n"+ footer;
 			} else if (eyeCount == 14) {
-				out = e+o+o+o+e+'\n'+o+l+l+l+o+'\n'+o+l+l+l+o+'\n'+o+l+l+l+o+'\n'+o+o+o+o+o;
-				footer = "Dammit!";
+				out = o+o+o+o+n+'\n'
+					+o+e1+e2+l+o+'\n'
+					+o+e4+e5+l+o+'\n'
+					+o+l+e8+e9+o+'\n'
+					+n+o+o+o+o;
+				footer = "Again? 14 eyes? Really?\n"+footer;
 			} else if (eyeCount == 15) {
-				out = e+o+o+o+o+'\n'+o+l+l+l+o+'\n'+o+l+l+l+o+'\n'+o+l+l+l+o+'\n'+o+o+o+o+o;
-				footer = "Dammit!";
+				out = o+o+o+o+n+'\n'
+					+o+e1+l+e+o+'\n'
+					+o+e+e5+l+o+e+'\n'
+					+o+l+e8+o+o+'\n'
+					+n+o+o+o+o;
+				footer = "Well, now it's really messed up...\n"+footer;
 			}
 		} else if (isBroken) {
 			footer = broken[rng.nextInt(broken.length)];
@@ -160,4 +207,14 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 		}
 		System.out.println("[Findseed] Done preparing bot.");
 	}
+	
+    public long getSeed(Random rng) {
+        long seed = reverse(rng.nextLong()) ^ 0x5deece66dL;
+        rng.setSeed(seed);
+        return seed^ 0x5deece66dL;
+    }
+
+    public static long reverse(long in) {
+        return (((7847617*((24667315*(in >>> 32) + 18218081*(in & 0xffffffffL) + 67552711) >> 32) - 18218081*((-4824621*(in >>> 32) + 7847617*(in & 0xffffffffL) + 7847617) >> 32)) - 11) * 246154705703781L) & 0xffffffffffffL;
+    }
 }
