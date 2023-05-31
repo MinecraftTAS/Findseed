@@ -1,4 +1,4 @@
-package de.pfannekuchen.tasdiscordbot.main;
+package com.minecrafttas.findseedbot.main;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,7 +10,7 @@ import java.util.Properties;
 
 import javax.security.auth.login.LoginException;
 
-import de.pfannekuchen.tasdiscordbot.TASDiscordBot;
+import com.minecrafttas.findseedbot.FindseedBot;
 
 public class Main {
 
@@ -23,7 +23,7 @@ public class Main {
 		configuration.load(new FileInputStream(propertiesFile));
 		
 		/* Create and run Bot */
-		final TASDiscordBot bot = new TASDiscordBot(configuration);
+		final FindseedBot bot = new FindseedBot(configuration);
 		new Thread(bot).run();
 	}
 
