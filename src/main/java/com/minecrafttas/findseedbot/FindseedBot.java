@@ -1,6 +1,5 @@
-package de.pfannekuchen.tasdiscordbot;
+package com.minecrafttas.findseedbot;
 
-import java.awt.Color;
 import java.util.Properties;
 import java.util.Random;
 
@@ -9,23 +8,25 @@ import javax.security.auth.login.LoginException;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.MessageBuilder;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.events.interaction.SlashCommandEvent;
+import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.CommandData;
+import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.requests.restaction.CommandListUpdateAction;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.internal.interactions.CommandDataImpl;
 
-public class TASDiscordBot extends ListenerAdapter implements Runnable {
+public class FindseedBot extends ListenerAdapter implements Runnable {
 
 	private final JDA jda;
 	private final Properties configuration;
 	
 	@Override
-	public void onSlashCommand(SlashCommandEvent event) {
+	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
 		if ("findseed".equalsIgnoreCase(event.getName())) {
 			
 			long seedOption=0;
@@ -39,43 +40,9 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 			String avatarUrl=event.getUser().getEffectiveAvatarUrl();
 			
 			
-			event.reply(new MessageBuilder().setEmbeds(findseedEmbed(seedOption, userTagOption, avatarUrl, isSetSeed)).build()).complete();
+			event.reply(new MessageCreateBuilder().setEmbeds(findseedEmbed(seedOption, userTagOption, avatarUrl, isSetSeed)).build()).complete();
 		}
 	}
-	
-//	@Override
-//	public void onGenericGuildMessage(GenericGuildMessageEvent event) {
-//		try {
-//			event.getChannel().retrieveMessageById(event.getMessageIdLong()).submit().whenComplete((msg, stage)->{
-//				String[] words = msg.getContentRaw().split(" ");
-//				if("!debug".equals(words[0])&&msg.getAuthor().getId().equals("146588910292566016")) {
-//					long seedOption=0;
-//					boolean isSetSeed=false;
-//					if(words.length>1 &&isLong(words[1])) {
-//						seedOption=Long.parseLong(words[1]);
-//						isSetSeed=true;
-//					}
-//					User user=msg.getAuthor();
-//					
-//					event.getChannel().sendMessage(new MessageBuilder().appendFormat("Debugging things", (Object[]) null).setEmbeds(findseedEmbed(seedOption, user.getAsTag(), user.getEffectiveAvatarUrl(), isSetSeed)).build()).queue();
-//				}
-//			});
-//		} catch (Exception e3) {
-//			return;
-//		}
-//	}
-	
-//	private boolean isLong(String longIn) {
-//		if(longIn==null) {
-//			return false;
-//		}
-//		try {
-//			Long.parseLong(longIn);
-//		}catch (Exception e) {
-//			return false;
-//		}
-//		return true;
-//	}
 	
 	private String[] broken = new String[] {
 		"Great, you broke it.",
@@ -92,7 +59,7 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 	private MessageEmbed findseedEmbed(long seed, String usertag, String userurl, boolean isSetSeed) {
 		boolean[] eyes = new boolean[12];
 		Random rng = new Random();
-		if (isSetSeed) rng.setSeed(seed);
+		if (isSetSeed) rng.setSeed(seed ^ 0x5deece66dL);
 		int eyeCount = 0;
 		String n = "<:nothing:912781172063490050>";
 		String o = "<:nothing:912780807091933184>";
@@ -152,9 +119,9 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 				+o+e7+e8+e9+o+'\n'
 				+n+o+o+o+n;
 			eyeCount = 0;
-			rng.setSeed(seed);
+			rng.setSeed(seed ^ 0x5deece66dL);
 			for (int i = 0; i < 16; i++) {
-				eyeCount += rng.nextFloat() < 0.1f ? 1 : 0;
+				eyeCount += (rng.nextFloat() < 0.1f ? 1 : 0);
 			}
 			if (eyeCount == 13) {
 				out = o+o+o+o+n+'\n'
@@ -183,10 +150,10 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 			eyeCount = rng.nextInt(32)-64;
 			out = out.replaceAll(o, rng.nextBoolean() ? broken1 : broken2);
 		}
-		return new EmbedBuilder().setTitle("findseed - Your seed is a **" + eyeCount + "** eye").addField("", out, false).setColor(Color.red.darker()).addField("", footer, false).setFooter(usertag, userurl).build();
+		return new EmbedBuilder().setTitle("findseed - Your seed is a **" + eyeCount + "** eye").addField("", out, false).setColor(0x3f6965).addField("", footer, false).setFooter(usertag, userurl).build();
 	}
 
-	public TASDiscordBot(Properties configuration) throws InterruptedException, LoginException {
+	public FindseedBot(Properties configuration) throws InterruptedException, LoginException {
 		this.configuration = configuration;
 		final JDABuilder builder = JDABuilder.createDefault(this.configuration.getProperty("token"))
 				.setMemberCachePolicy(MemberCachePolicy.ALL)
@@ -200,10 +167,17 @@ public class TASDiscordBot extends ListenerAdapter implements Runnable {
 	public void run() {
 		/* Register the Commands */
 		System.out.println("[Findseed] Preparing Bot...");
-		CommandData d = new CommandData("findseed", "Finds a seed and shows the amount of eyes it has.");
-		d.addOption(OptionType.INTEGER, "seed", "Seed to check on", false);
 		for (Guild guild : jda.getGuilds()) {
-			guild.upsertCommand(d).complete();
+			
+			CommandListUpdateAction updater = guild.updateCommands();
+			
+			CommandDataImpl findseedcommand = new CommandDataImpl("findseed", "Finds a seed and shows the amount of eyes it has.");
+			OptionData seedOption=new OptionData(OptionType.INTEGER, "seed", "Seed to check on", false);
+			
+			findseedcommand.addOptions(seedOption);
+			
+			updater.addCommands(findseedcommand);
+			updater.queue();
 		}
 		System.out.println("[Findseed] Done preparing bot.");
 	}
