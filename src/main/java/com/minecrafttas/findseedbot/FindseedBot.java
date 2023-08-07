@@ -32,7 +32,12 @@ public class FindseedBot extends ListenerAdapter implements Runnable {
 			long seedOption=0;
 			boolean isSetSeed=false;
 			if(event.getOption("seed")!=null) {
-				seedOption=event.getOption("seed").getAsLong();
+				try {
+					seedOption = event.getOption("seed").getAsLong();
+				} catch (NumberFormatException e) {
+					event.reply("Invalid seed!").setEphemeral(true).queue();
+					return;
+				}
 				isSetSeed=true;
 			}
 			
@@ -53,7 +58,7 @@ public class FindseedBot extends ListenerAdapter implements Runnable {
 		"asldzhiuaszd836q2w097rew",
 		"1+2	4 mv9182n	3z037n5vnz 87923 t5",
 		"20p3ic  nz745897b23zb5t 709823t5790n2305",
-		"23789cn5 z609237c5 bt0ß92w349567m",
+		"23789cn5 z609237c5 bt0ÃŸ92w349567m",
 	};
 	
 	private MessageEmbed findseedEmbed(long seed, String usertag, String userurl, boolean isSetSeed) {
@@ -172,7 +177,7 @@ public class FindseedBot extends ListenerAdapter implements Runnable {
 			CommandListUpdateAction updater = guild.updateCommands();
 			
 			CommandDataImpl findseedcommand = new CommandDataImpl("findseed", "Finds a seed and shows the amount of eyes it has.");
-			OptionData seedOption=new OptionData(OptionType.INTEGER, "seed", "Seed to check on", false);
+			OptionData seedOption=new OptionData(OptionType.STRING, "seed", "Seed to check on", false);
 			
 			findseedcommand.addOptions(seedOption);
 			
