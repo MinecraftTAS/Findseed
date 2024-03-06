@@ -7,9 +7,31 @@
 /// Config file for the bot
 #define CONFIG_FILE "config.json"
 
+/// Mask for 48 bits
+#define MASK_48_BITS 0xFFFFFFFFFFFFULL
+/// Multiplier for the seed
+#define MULTIPLIER 0x5DEECE66DULL
+/// Addend for the seed
+#define ADDEND 0xBULL
+
 /// Discord client instance
 static struct discord *discord_client = NULL;
 
+/**
+ * Generate the next float from the seed (Java Random)
+ *
+ * \param seed Seed
+ *   The seed to generate the next float from
+ *
+ * \return The next float
+ *   The next float generated from the seed
+*/
+static float nextFloat(uint64_t *seed) {
+    *seed = (*seed * MULTIPLIER + ADDEND) & MASK_48_BITS;
+    int next = (int) ((int64_t) *seed >> (48ULL - 24ULL));
+    float result = next / (float) (1 << 24);
+    return result;
+}
 /**
  * Handle SIGINT signal and shut down the bot
  *
@@ -59,8 +81,17 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     srand(time(NULL));
     int64_t seed = ((int64_t) rand() << 32) | (int64_t) rand();
     if (event->data->options) seed = (int64_t) atoll(event->data->options->array[0].value);
+    uint64_t java_seed = (uint64_t) seed & MASK_48_BITS; // mask 48 bits
 
-    (void) seed;
+    // calculate amount of eyes
+    int eye_count = 0;
+    int special_eye_count = 0;
+    for (int i = 0; i < 15; i++) {
+        if (nextFloat(&java_seed) < 0.1) {
+            special_eye_count++;
+            if (i < 12) eye_count++;
+        }
+    }
 }
 
 /**
