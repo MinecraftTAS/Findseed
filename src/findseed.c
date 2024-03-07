@@ -79,6 +79,37 @@ static float nextFloat(uint64_t *seed) {
 }
 
 /**
+ * Generate zalgo text
+ *
+ * \param text Text to corrupt
+ * \param corrupted Corrupted text
+ *
+ * \return The original text
+ */
+static char* corrupt_text(char* text, char* corrupted) {
+    int len = strlen(text);
+    char* corrupted_ptr = corrupted;
+
+    for (int i = 0; i < len; i++) {
+        *corrupted_ptr++ = text[i];
+
+        uint32_t n  = (uint32_t) rand() % 2;
+        while (n--) {
+            uint32_t base = 0x0300;
+            uint32_t acc = (uint32_t) rand() % 112;
+            uint32_t code = base + acc;
+            *corrupted_ptr++ = 0xc0 | ((code >> 6) & 0x1f);
+            *corrupted_ptr++ = 0x80 | (code & 0x3f);
+        }
+
+    }
+
+    *corrupted_ptr = 0;
+
+    return text;
+}
+
+/**
  * Handle SIGINT signal and shut down the bot
  *
  * \param signum Signal number
@@ -187,6 +218,28 @@ static void on_findseed(struct discord *client, const struct discord_interaction
         }
     }
 
+    // check weird eye
+    bool weird_eye = false;
+    if (rand() <= RAND_MAX / 10000 && !event->data->options) {
+        weird_eye = true;
+        for (int i = 0; i < 12; i++)
+            frame_emojis[i] = FRAME_FULL_EMOJI;
+        char* void_emojis[] = {
+            VOID_TL_EMOJI, VOID_TM_EMOJI, VOID_TR_EMOJI,
+            VOID_ML_EMOJI, VOID_MM_EMOJI, VOID_MR_EMOJI,
+            VOID_BL_EMOJI, VOID_BM_EMOJI, VOID_BR_EMOJI
+        };
+        memcpy(lava_emojis, void_emojis, sizeof(void_emojis));
+        corner_emojis[0] = FRAME_FULL_EMOJI;
+        corner_emojis[1] = FRAME_FULL_EMOJI;
+        corner_emojis[2] = FRAME_FULL_EMOJI;
+        corner_emojis[3] = FRAME_FULL_EMOJI;
+        seed = ((int64_t) rand() << 32) | (int64_t) rand();
+        eye_count = 12;
+        special_eye_count = 16;
+        sprintf(message, "They said it was impossible. How'd you do it?\n");
+    }
+
     // create end portal
     char end_portal_message[2001];
     sprintf(end_portal_message, "%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s",
@@ -198,8 +251,9 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     );
 
     // create fields
-    char footer[512];
+    char footer[2001];
     sprintf(footer, "%s%s %ld", message, event->data->options ? "Seed specified:" : "Random seed:", seed);
+    if (weird_eye) free(corrupt_text(strdup(footer), footer));
     struct discord_embed_field fields[] = {
         {
             .name = "",
@@ -218,6 +272,7 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     sprintf(avatar, "https://cdn.discordapp.com/avatars/%"PRIu64"/%s.webp", event->member->user->id, event->member->user->avatar);
     char title[256];
     sprintf(title, "findseed - Your seed is a %d eye", eye_count >= 12 ? special_eye_count : eye_count);
+    if (weird_eye) free(corrupt_text(strdup(title), title));
     struct discord_embed embeds[] = {
         {
             .title = title,
