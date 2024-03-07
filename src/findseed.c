@@ -61,7 +61,7 @@
     "Great, you broke it.", \
     "Wait? It's broken?!", \
     "Okay.. let's pretend we never saw this", \
-    "Huh, that's weird. Let's hope it doesn't cause any troubles" \
+    "Huh, that's weird. Let's hope it doesn't cause any trouble" \
     "I don't really know what happened either", \
     "I'm not sure what you did, but it's not supposed to look like this", \
     "This is not how it's supposed to look like", \
