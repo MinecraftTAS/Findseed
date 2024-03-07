@@ -10,3 +10,4 @@ To use the bot, simply type `/findseed` in any channel the bot has access to (pr
 This bot uses the following libraries:
 - [concord v2.2.1.r18.g25aceab6-1](https://github.com/Cogmasters/concord/commit/25aceab6c73da646f94b8c9de25e4d8013938e8e)
 - [libcurl 8.6.0-3](https://github.com/curl/curl/tree/curl-8_6_0)
+- [zalgo (embedded in source)](https://github.com/maeln/zalgo)
