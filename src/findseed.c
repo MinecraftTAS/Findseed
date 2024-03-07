@@ -51,6 +51,23 @@
 #define VOID_BM_EMOJI "<a:endportal8:968224856283951116>"
 /// Void emoji (bottom right)
 #define VOID_BR_EMOJI "<a:endportal9:968224854161645590>"
+/// Full broken end portal frame emoji
+#define FRAME_FULL_BROKEN_EMOJI "<:end_portal_frame_broken1:912811134191562812>"
+/// Broken end portal frame emoji
+#define FRAME_BROKEN_EMOJI "<:end_portal_frame_broken2:912811133952466974>"
+
+/// Corrupted texts
+#define CORRUPTED_TEXTS { \
+    "Great, you broke it.", \
+    "Wait? It's broken?!", \
+    "Okay.. let's pretend we never saw this", \
+    "Huh, that's weird. Let's hope it doesn't cause any troubles" \
+    "I don't really know what happened either", \
+    "I'm not sure what you did, but it's not supposed to look like this", \
+    "This is not how it's supposed to look like", \
+    "Let's just pretend this never happened", \
+}
+#define CORRUPTED_TEXTS_SIZE 8
 
 /// Mask for 48 bits
 #define MASK_48_BITS 0xFFFFFFFFFFFFULL
@@ -240,6 +257,20 @@ static void on_findseed(struct discord *client, const struct discord_interaction
         sprintf(message, "They said it was impossible. How'd you do it?\n");
     }
 
+    // check corrupted portal
+    if (rand() <= RAND_MAX / 200 && !event->data->options) {
+        char* corrupted_texts[] = CORRUPTED_TEXTS;
+        int index = (uint32_t) rand() % CORRUPTED_TEXTS_SIZE;
+        sprintf(message, "%s\n", corrupted_texts[index]);
+
+        for (int i = 0; i < 15; i++) {
+            if (rand() <= RAND_MAX / 2)
+                frame_emojis[i] = (strcmp(frame_emojis[i], FRAME_FULL_EMOJI) == 0) ? FRAME_FULL_BROKEN_EMOJI : FRAME_BROKEN_EMOJI;
+        }
+
+        weird_eye = true;
+    }
+
     // create end portal
     char end_portal_message[2001];
     sprintf(end_portal_message, "%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s",
@@ -298,6 +329,8 @@ static void on_findseed(struct discord *client, const struct discord_interaction
             }
         }
     }, NULL);
+
+    log_info("[FINDSEED] User %s requested seed %ld (%s), responded with %d eye(s). Portal was %smarked as corrupted. Portal was %smarked as 16 eye.", event->member->user->username, seed, event->data->options ? "specified" : "random", eye_count == 12 ? special_eye_count : eye_count, weird_eye ? "" : "not ", special_eye_count == 16 ? "" : "not ");
 }
 
 /**
