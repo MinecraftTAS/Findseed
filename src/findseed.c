@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <signal.h>
+#include <string.h>
 
 #include <concord/discord.h>
 #include <concord/log.h>
@@ -16,23 +17,23 @@
 /// Lava emoji
 #define LAVA_EMOJI "<a:lava:912779051926700063>"
 /// Void emoji (top left)
-#define VOID_TL_EMOJI "<a:endportal1:968224841473855549>";
+#define VOID_TL_EMOJI "<a:endportal1:968224841473855549>"
 /// Void emoji (top middle)
-#define VOID_TM_EMOJI "<a:endportal2:968224842224656424>";
+#define VOID_TM_EMOJI "<a:endportal2:968224842224656424>"
 /// Void emoji (top right)
-#define VOID_TR_EMOJI "<a:endportal3:968224854639804457>";
+#define VOID_TR_EMOJI "<a:endportal3:968224854639804457>"
 /// Void emoji (middle left)
-#define VOID_ML_EMOJI "<a:endportal4:968224854622998578>";
+#define VOID_ML_EMOJI "<a:endportal4:968224854622998578>"
 /// Void emoji (middle middle)
-#define VOID_MM_EMOJI "<a:endportal5:968224854761414746>";
+#define VOID_MM_EMOJI "<a:endportal5:968224854761414746>"
 /// Void emoji (middle right)
-#define VOID_MR_EMOJI "<a:endportal6:968224839246696448>";
+#define VOID_MR_EMOJI "<a:endportal6:968224839246696448>"
 /// Void emoji (bottom left)
-#define VOID_BL_EMOJI "<a:endportal7:968224855826763926>";
+#define VOID_BL_EMOJI "<a:endportal7:968224855826763926>"
 /// Void emoji (bottom middle)
-#define VOID_BM_EMOJI "<a:endportal8:968224856283951116>";
+#define VOID_BM_EMOJI "<a:endportal8:968224856283951116>"
 /// Void emoji (bottom right)
-#define VOID_BR_EMOJI "<a:endportal9:968224854161645590>";
+#define VOID_BR_EMOJI "<a:endportal9:968224854161645590>"
 
 /// Mask for 48 bits
 #define MASK_48_BITS 0xFFFFFFFFFFFFULL
@@ -127,18 +128,14 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     // create lava/void emojis
     char* lava_emojis[9];
     if (eye_count == 12) {
-        lava_emojis[0] = VOID_TL_EMOJI;
-        lava_emojis[1] = VOID_TM_EMOJI;
-        lava_emojis[2] = VOID_TR_EMOJI;
-        lava_emojis[3] = VOID_ML_EMOJI;
-        lava_emojis[4] = VOID_MM_EMOJI;
-        lava_emojis[5] = VOID_MR_EMOJI;
-        lava_emojis[6] = VOID_BL_EMOJI;
-        lava_emojis[7] = VOID_BM_EMOJI;
-        lava_emojis[8] = VOID_BR_EMOJI;
+        char* void_emojis[] = {
+            VOID_TL_EMOJI, VOID_TM_EMOJI, VOID_TR_EMOJI,
+            VOID_ML_EMOJI, VOID_MM_EMOJI, VOID_MR_EMOJI,
+            VOID_BL_EMOJI, VOID_BM_EMOJI, VOID_BR_EMOJI
+        };
+        memcpy(lava_emojis, void_emojis, sizeof(void_emojis));
     } else {
-        // i'm crazy, i know
-        lava_emojis[0] = lava_emojis[1] = lava_emojis[2] = lava_emojis[3] = lava_emojis[4] = lava_emojis[5] = lava_emojis[6] = lava_emojis[7] = lava_emojis[8] = LAVA_EMOJI;
+        for (int i = 0; i < 9; i++) lava_emojis[i] = LAVA_EMOJI;
     }
 
     // create corner emojis
@@ -166,11 +163,11 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     // create end portal
     char end_portal_message[2001];
     sprintf(end_portal_message, "%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s\n%s%s%s%s%s",
-        corner_emojis[0], frame_emojis[0], frame_emojis[1], frame_emojis[2], corner_emojis[1],
-        frame_emojis[3], lava_emojis[0], lava_emojis[1], lava_emojis[2], frame_emojis[4],
-        frame_emojis[5], lava_emojis[3], lava_emojis[4], lava_emojis[5], frame_emojis[6],
-        frame_emojis[7], lava_emojis[6], lava_emojis[7], lava_emojis[8], frame_emojis[8],
-        corner_emojis[2], frame_emojis[9], frame_emojis[10], frame_emojis[11], corner_emojis[3]
+        corner_emojis[0],  frame_emojis[0],  frame_emojis[1],  frame_emojis[2],  corner_emojis[1],
+        frame_emojis[3],   lava_emojis[0],   lava_emojis[1],   lava_emojis[2],   frame_emojis[4],
+        frame_emojis[5],   lava_emojis[3],   lava_emojis[4],   lava_emojis[5],   frame_emojis[6],
+        frame_emojis[7],   lava_emojis[6],   lava_emojis[7],   lava_emojis[8],   frame_emojis[8],
+        corner_emojis[2],  frame_emojis[9],  frame_emojis[10], frame_emojis[11], corner_emojis[3]
     );
 
     // create fields
@@ -193,7 +190,7 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     char avatar[256];
     sprintf(avatar, "https://cdn.discordapp.com/avatars/%"PRIu64"/%s.webp", event->member->user->id, event->member->user->avatar);
     char title[256];
-    sprintf(title, "findseed - Your seed is a %d eye", eye_count);
+    sprintf(title, "findseed - Your seed is a %d eye", eye_count >= 12 ? special_eye_count : eye_count);
     struct discord_embed embeds[] = {
         {
             .title = title,
