@@ -139,24 +139,34 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     }
 
     // create corner emojis
+    char message[128] = "";
     char* corner_emojis[4];
     corner_emojis[0] = corner_emojis[1] = corner_emojis[2] = corner_emojis[3] = NOTHING_EMOJI;
     if (eye_count == 12) {
+        if (special_eye_count >= 12) {
+            sprintf(message, "You actually did it. Unbelievable\n");
+        }
+
         if (special_eye_count >= 13) {
             corner_emojis[0] = frame_emojis[12];
             lava_emojis[2] = LAVA_EMOJI;
+            sprintf(message, "Wait, how did you...?\n");
         }
+
         if (special_eye_count >= 14) {
             corner_emojis[3] = frame_emojis[13];
             lava_emojis[5] = LAVA_EMOJI;
             lava_emojis[6] = LAVA_EMOJI;
+            sprintf(message, "You're not supposed to see this\n");
         }
+
         if (special_eye_count >= 15) {
             lava_emojis[1] = LAVA_EMOJI;
             lava_emojis[2] = FRAME_EMOJI;
             lava_emojis[3] = FRAME_EMOJI;
             lava_emojis[8] = FRAME_FULL_EMOJI;
             frame_emojis[6] = FRAME_FULL_EMOJI FRAME_EMOJI;
+            sprintf(message, "You broke it... You actually broke it\n");
         }
     }
 
@@ -171,8 +181,8 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     );
 
     // create fields
-    char value[512];
-    sprintf(value, "%s %ld", event->data->options ? "Seed specified:" : "Random seed:", seed);
+    char footer[512];
+    sprintf(footer, "%s%s %ld", message, event->data->options ? "Seed specified:" : "Random seed:", seed);
     struct discord_embed_field fields[] = {
         {
             .name = "",
@@ -181,7 +191,7 @@ static void on_findseed(struct discord *client, const struct discord_interaction
         },
         {
             .name = "",
-            .value = value,
+            .value = footer,
             .Inline = false
         }
     };
