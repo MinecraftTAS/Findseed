@@ -330,6 +330,8 @@ static void on_findseed(struct discord *client, const struct discord_interaction
     log_info("[FINDSEED] User %s requested seed %ld (%s), responded with %d eye(s). Portal was %smarked as corrupted. Portal was %smarked as 16 eye.", event->member->user->username, seed, event->data->options ? "specified" : "random", eye_count == 12 ? special_eye_count : eye_count, weird_eye ? "" : "not ", special_eye_count == 16 ? "" : "not ");
 }
 
+bool is_initialized = false; ///< Whether the bot was initialized
+
 /**
  * Main bot function
  *
@@ -337,9 +339,12 @@ static void on_findseed(struct discord *client, const struct discord_interaction
  * \param event Ready event
  */
 void bot_main(struct discord *client, const struct discord_ready *event) {
+    // check if bot was already initialized
+    if (is_initialized) return;
+    is_initialized = true;
+
     // initialize global slash commands
     log_info("[FINDSEED] Initializing global slash commands...");
-    discord_set_on_interaction_create(client, on_findseed);
     discord_bulk_overwrite_global_application_commands(client, event->application->id, &(struct discord_application_commands) {
         .size = 1,
         .array = &(struct discord_application_command) {
@@ -380,6 +385,7 @@ int main() {
     log_info("[FINDSEED] Launching findseed discord bot...");
     signal(SIGINT, handle_sigint);
     discord_set_on_ready(client, bot_main);
+    discord_set_on_interaction_create(client, on_findseed);
     CCORDcode code = discord_run(client);
 
     // cleanup discord bot
